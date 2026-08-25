@@ -5,16 +5,20 @@ Usage: uv run python seed/run_seed.py
 
 import os
 import pathlib
+import re
 
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
 CYPHER_FILE = pathlib.Path(__file__).with_name("seed.cypher")
 
+# Split on ";" only at end of line — string literals in the file may contain ";".
+STATEMENT_SEP = re.compile(r";\s*(?:\r?\n|$)")
+
 
 def main() -> None:
     load_dotenv()
-    statements = [s.strip() for s in CYPHER_FILE.read_text(encoding="utf-8").split(";") if s.strip()]
+    statements = [s.strip() for s in STATEMENT_SEP.split(CYPHER_FILE.read_text(encoding="utf-8")) if s.strip()]
     with GraphDatabase.driver(
         os.environ["NEO4J_URI"],
         auth=(os.environ["NEO4J_USERNAME"], os.environ["NEO4J_PASSWORD"]),
