@@ -1,0 +1,21 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+*credentials*
+Neo4j-*.txt
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# Data / downloads
+data/
+*.xml
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
