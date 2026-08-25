@@ -39,6 +39,13 @@ German voice agent (LiveKit + OpenAI Realtime) over the endpoints above —
 the LLM only ever picks one of five fixed tools; no text2cypher.
 
 ```
+.\demo.ps1                                  # one command: API window + agent (browser demo)
+.\demo.ps1 console                          # same, but terminal mic loop (no LiveKit Cloud)
+```
+
+Or by hand:
+
+```
 uv run uvicorn app.main:app                 # API must be running
 uv run python voice/agent.py console        # terminal dev loop (no LiveKit Cloud)
 uv run python voice/agent.py dev            # register with LiveKit Cloud project
@@ -49,3 +56,22 @@ project → Connect → speak German. Call summaries are written back as
 `(:Mandant)-[:CALLED]->(:Interaction)`.
 
 Env keys: see `.env.example` (LiveKit demo project + `OPENAI_API_KEY`).
+
+## Graph showcase (Aura Query tab)
+
+Most-cited EStG paragraphs — the citation hubs of the law (§ 52
+Anwendungsvorschriften leads with 134 incoming references):
+
+```cypher
+MATCH (p:Paragraph)<-[:VERWEIST_AUF]-(citing)
+WITH p, count(citing) AS zitiert_von ORDER BY zitiert_von DESC LIMIT 10
+RETURN p.id AS par, coalesce(p.kurzname, p.titel) AS thema, zitiert_von
+```
+
+The full picture in one query — operational and legal subgraph joined at
+`Fall`, with caller memory:
+
+```cypher
+MATCH p = (:Interaction)<-[:CALLED]-(:Mandant)-[:HAT_FALL]->(:Fall)-[:GOVERNED_BY]->(:Paragraph)
+RETURN p LIMIT 50
+```
