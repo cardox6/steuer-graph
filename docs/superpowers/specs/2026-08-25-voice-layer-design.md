@@ -16,14 +16,15 @@ picks one of four fixed tools; user input flows in as parameters.
 1. **Channel: LiveKit web voice.** Demo runs in the browser via LiveKit;
    no telephony, no phone number. Dev loop uses LiveKit *console mode*
    (terminal mic, no cloud needed).
-2. **Speech stack: SteuerClara's proven `pipeline_de` recipe**, not OpenAI
-   Realtime speech-to-speech. Deepgram `nova-3` (German, EU endpoint) STT +
-   OpenAI LLM + ElevenLabs German TTS. This is the user's own production
-   configuration and encodes hard-won German fixes (filler-words bug,
-   voice-settings tuning, name biasing). Realtime was considered and dropped
-   after reviewing SteuerClara.
-3. **Credentials: hybrid.** Reuse the three stateless provider keys
-   (OPENAI_API_KEY, DEEPGRAM_API_KEY, ELEVEN_API_KEY) from
+2. **Speech stack: OpenAI Realtime speech-to-speech.** One provider, one
+   key, server-side voice detection, no local model downloads — the
+   "simple and working" choice for a demo. SteuerClara's production
+   `pipeline_de` recipe (Deepgram de + LLM + ElevenLabs) was considered and
+   deliberately deferred: its German tuning pays off at production call
+   volume, not in a demo, and costs two extra vendors plus local
+   VAD/turn-detector model setup. It remains the documented upgrade path.
+   We still reuse SteuerClara's German prompt rules and tool patterns.
+3. **Credentials: hybrid.** Reuse the stateless OPENAI_API_KEY from
    `SteuerClara\agent\.env`; create a **new free LiveKit Cloud project** for
    the demo so prod SIP/dispatch infrastructure stays fully isolated.
    All values live only in the gitignored `.env`.
@@ -41,7 +42,7 @@ Browser (LiveKit Agents Playground)      dev: terminal console mode
         ▼
 LiveKit Cloud (new demo project)
         │
-voice/agent.py  — AgentSession(pipeline_de) + 4 @function_tool
+voice/agent.py  — AgentSession(OpenAI Realtime) + 4 @function_tool
         │  httpx (localhost:8000)
         ▼
 app/main.py (FastAPI) ── app/queries.py (all Cypher) ── Aura 67f62912
@@ -50,13 +51,9 @@ app/main.py (FastAPI) ── app/queries.py (all Cypher) ── Aura 67f62912
 ## Components
 
 ### voice/agent.py (new)
-- `AgentSession` built like SteuerClara `PIPELINE_DE`: Deepgram nova-3
-  (`language="de"`, `filler_words=True`, `numerals=True`, `punctuate=True`,
-  `endpointing_ms=300`, `mip_opt_out=True`, EU base URL), Silero VAD +
-  multilingual turn detector, ElevenLabs `eleven_flash_v2_5` with the tuned
-  voice settings (`stability=1.0, similarity_boost=0.75, style=0.0,
-  use_speaker_boost=False`) and one German voice id from
-  `SteuerClara\agent\config\voices.py`. LLM: `gpt-5.4-mini` with `reasoning_effort="minimal"` (same as SteuerClara prod).
+- `AgentSession` with `openai.realtime.RealtimeModel` (speech-to-speech,
+  server-side turn detection/VAD, a German-capable voice picked at
+  implementation). No STT/TTS plugins, no local models.
 - Four tools, German docstrings (LLM-facing), thin httpx calls:
   - `status_abfragen(mandant)` → `GET /status/{mandant}`
   - `fehlende_belege(mandant)` → `GET /missing/{mandant}`
@@ -81,11 +78,10 @@ app/main.py (FastAPI) ── app/queries.py (all Cypher) ── Aura 67f62912
 `.env` additions (documented in `.env.example`, values never committed):
 `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` (new demo project —
 user creates it in the LiveKit console and fills these in),
-`OPENAI_API_KEY`, `DEEPGRAM_API_KEY`, `ELEVEN_API_KEY` (copied locally from
-`SteuerClara\agent\.env`, file-to-file, never through chat or terminals that
-echo values).
+`OPENAI_API_KEY` (copied locally from `SteuerClara\agent\.env`,
+file-to-file, never through chat or terminals that echo values).
 
-Dependencies added via uv: `livekit-agents[openai,elevenlabs,silero,turn-detector,deepgram]`, `httpx`.
+Dependencies added via uv: `livekit-agents[openai]`, `httpx`.
 
 ## Error handling
 - API unreachable / Mandant not found / any tool exception → tool returns a
@@ -110,3 +106,7 @@ Dependencies added via uv: `livekit-agents[openai,elevenlabs,silero,turn-detecto
 Telephony/SIP, multi-tenant anything, Langfuse/observability, custom web
 frontend, thinking/ambient sounds, parallel transcription, strategy/role
 system, autoscaling. SteuerClara remains untouched (read-only reference).
+
+Deferred upgrade path: swap the Realtime model for SteuerClara's
+`pipeline_de` profile (Deepgram nova-3 de + LLM + ElevenLabs with tuned
+voice settings) if German STT/TTS quality needs production polish.
