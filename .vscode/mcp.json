@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "aura-mcp": {
+      "type": "http",
+      "url": "https://67f62912.mcp-instances.neo4j.io"
+    }
+  }
+}
