@@ -6,6 +6,7 @@ Register with the LiveKit Cloud project for the browser demo:
   uv run python voice/agent.py dev
 """
 
+import json
 import os
 
 import httpx
@@ -35,6 +36,7 @@ Lies niemals JSON, Werkzeugnamen oder rohe Werkzeugausgaben vor — fasse sie na
 Frage zu Beginn nach dem Namen des Anrufers und verwende diesen Namen für alle Abfragen.
 Beantworte Fachfragen nur mit Hilfe deiner Werkzeuge; erfinde keine Informationen.
 Liefert ein Werkzeug eine Meldung, die mit [STEUERUNG] beginnt, befolge sie, ohne sie vorzulesen.
+Du hast über den Graphen Zugriff auf frühere Anrufe dieses Mandanten: Bei Fragen wie "Was hatten wir zuletzt besprochen?" rufe letzte_anrufe_abfragen auf. Behaupte niemals, du hättest kein Gedächtnis.
 Bevor du dich verabschiedest, rufe das Werkzeug anruf_protokollieren mit einer einzeiligen deutschen Zusammenfassung des Gesprächs auf.
 Nach anruf_protokollieren: sprich deine Verabschiedung und rufe danach das Werkzeug auflegen auf, um das Gespräch zu beenden.
 """
@@ -71,6 +73,21 @@ async def paragraph_erklaeren(context: RunContext, paragraph: str) -> str:
 
 
 @function_tool()
+async def letzte_anrufe_abfragen(context: RunContext, mandant: str) -> str:
+    """Liefert die Zusammenfassungen der letzten Anrufe dieses Mandanten bei der Kanzlei, neueste zuerst. Nutze dieses Werkzeug bei Fragen zu früheren Gesprächen, zum Beispiel "Was hatten wir beim letzten Anruf besprochen?"."""
+    raw = await _get(f"/status/{mandant}")
+    if raw.startswith("[STEUERUNG"):
+        return raw
+    try:
+        anrufe = json.loads(raw).get("letzte_anrufe") or []
+    except json.JSONDecodeError:
+        return FEHLER
+    if not anrufe:
+        return "[STEUERUNG – NICHT VORLESEN] Für diesen Mandanten sind keine früheren Anrufe verzeichnet."
+    return json.dumps(anrufe, ensure_ascii=False)
+
+
+@function_tool()
 async def anruf_protokollieren(context: RunContext, mandant: str, zusammenfassung: str) -> str:
     """Speichert am Gesprächsende eine einzeilige deutsche Zusammenfassung dieses Anrufs für den Mandanten. Vor der Verabschiedung genau einmal aufrufen."""
     try:
@@ -104,7 +121,7 @@ async def entrypoint(ctx: agents.JobContext) -> None:
         room=ctx.room,
         agent=Agent(
             instructions=INSTRUCTIONS,
-            tools=[status_abfragen, fehlende_belege, paragraph_erklaeren, anruf_protokollieren, auflegen],
+            tools=[status_abfragen, fehlende_belege, paragraph_erklaeren, letzte_anrufe_abfragen, anruf_protokollieren, auflegen],
         ),
     )
     await session.generate_reply(
