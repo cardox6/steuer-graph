@@ -10,6 +10,9 @@
 3. Open [agents-playground.livekit.io](https://agents-playground.livekit.io),
    sign in, select the demo project. Don't connect yet.
 4. Second browser tab: Aura console → **Query**, database `67f62912`.
+5. Fresh memory slate: `uv run python scripts/reset_demo.py` — deletes all
+   agent-written Interactions from rehearsals, keeps the seeded story, so
+   Call 2's "last call" is exactly the Call 1 the judges just watched.
 
 ## Call 1 — the status call (≈90 seconds)
 
