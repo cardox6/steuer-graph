@@ -57,3 +57,13 @@ RETURN p.id AS paragraph, p.titel AS titel,
        collect(DISTINCT inp.id) AS verwiesen_von,
        collect(DISTINCT {fall: f.id, art: f.art, mandant: m.name}) AS betroffene_faelle
 """
+
+# Write path for the voice layer: one Interaction per call, same Mandant
+# matching as STATUS so the agent can pass a spoken name or an id.
+LOG_INTERACTION = """
+MATCH (m:Mandant)
+WHERE m.id = $mandant OR toLower(m.name) CONTAINS toLower($mandant)
+CREATE (i:Interaction {id: randomUUID(), datum: datetime(), zusammenfassung: $zusammenfassung})
+MERGE (m)-[:CALLED]->(i)
+RETURN m.id AS mandant_id, i.id AS interaction_id
+"""
