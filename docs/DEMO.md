@@ -23,7 +23,7 @@ Connect in the playground. Clara greets and asks for your name.
 | "Warum ist Paragraph fünfunddreißig a für mich relevant?" | `paragraph_erklaeren` → `GET /why/35a` — legal subgraph on stage |
 | "Danke, tschüss." | `anruf_protokollieren` writes the summary, then `auflegen` ends the call |
 
-**Judge line:** "No text2cypher. The LLM only picks one of five fixed tools;
+**Judge line:** "No text2cypher. The LLM only picks one of six fixed tools;
 what I say only ever becomes a query *parameter*. Every Cypher statement is
 reviewed code in the repo."
 
@@ -32,9 +32,9 @@ reviewed code in the repo."
 Reconnect (new room, fresh session — Clara has **zero** session memory).
 
 1. "Jonas Brückner."
-2. **"Was hatten wir denn beim letzten Anruf besprochen?"** — Clara answers
-   from `letzte_anrufe` in the status payload: the summary **she herself wrote
-   60 seconds ago in Call 1**.
+2. **"Was hatten wir denn beim letzten Anruf besprochen?"** — Clara calls
+   the dedicated `letzte_anrufe_abfragen` tool and reads back the summary
+   **she herself wrote 60 seconds ago in Call 1**.
 3. Hang up.
 
 **Judge line:** "The agent has no memory — the *graph* is the memory. Call 1

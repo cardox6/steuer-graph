@@ -36,7 +36,7 @@ uv run uvicorn app.main:app --reload           # API on :8000
 ## Voice layer
 
 German voice agent (LiveKit + OpenAI Realtime) over the endpoints above —
-the LLM only ever picks one of five fixed tools; no text2cypher.
+the LLM only ever picks one of six fixed tools; no text2cypher.
 
 ```
 .\demo.ps1                                  # one command: API window + agent (browser demo)
