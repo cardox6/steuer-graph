@@ -10,6 +10,7 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from neo4j import AsyncGraphDatabase
+from pydantic import BaseModel
 
 from app import queries
 
@@ -59,4 +60,18 @@ async def why(paragraph: str):
     rows = await run(queries.WHY, paragraph=paragraph.lstrip("§ ").strip())
     if not rows:
         raise HTTPException(404, f"Paragraph nicht im Graph: {paragraph}")
+    return rows[0]
+
+
+class InteractionIn(BaseModel):
+    mandant: str
+    zusammenfassung: str
+
+
+@app.post("/interaction", status_code=201)
+async def log_interaction(body: InteractionIn):
+    """Persist a call summary as caller memory: Interaction node + CALLED edge."""
+    rows = await run(queries.LOG_INTERACTION, mandant=body.mandant, zusammenfassung=body.zusammenfassung)
+    if not rows:
+        raise HTTPException(404, f"Kein Mandant gefunden für: {body.mandant}")
     return rows[0]
