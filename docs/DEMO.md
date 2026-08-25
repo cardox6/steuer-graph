@@ -64,6 +64,17 @@ Top rows: both of today's calls, written by the agent.
 - Deliberately **not** used: text2cypher at runtime, GDS, vector search —
   fixed queries are the safety story.
 
+## Anticipated question: "Why not neo4j-agent-memory / NAMS?"
+
+Our memory is **domain-native**: Interaction nodes live in the same graph as
+Mandanten, Fälle and Paragraphen, so one query joins memory to case data —
+the context-graph idea in miniature, hand-built. The hosted service (NAMS)
+would put memory in a separate database and break that join; the library's
+LLM-extraction pipeline would also break our "parameters only, no LLM
+writes" safety story. As an upgrade path (preferences, reasoning traces for
+audit), the self-hosted library on this same Aura instance is the natural
+next step.
+
 ## Showing the graph in the Neo4j UI
 
 Aura console → left nav **Studio → Query** (make sure the database dropdown
