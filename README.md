@@ -31,5 +31,21 @@ uv run uvicorn app.main:app --reload           # API on :8000
 - `GET /status/{mandant}` — Fälle, Belege, Fristen, governing §§, last calls (name or id)
 - `GET /missing/{mandant}` — fehlende Belege + deadlines
 - `GET /why/{paragraph}` — citation network + affected cases for an EStG §
+- `POST /interaction` — voice layer writes call summaries back as caller memory
 
-Voice layer comes later.
+## Voice layer
+
+German voice agent (LiveKit + OpenAI Realtime) over the endpoints above —
+the LLM only ever picks one of five fixed tools; no text2cypher.
+
+```
+uv run uvicorn app.main:app                 # API must be running
+uv run python voice/agent.py console        # terminal dev loop (no LiveKit Cloud)
+uv run python voice/agent.py dev            # register with LiveKit Cloud project
+```
+
+Browser demo: https://agents-playground.livekit.io → select the demo
+project → Connect → speak German. Call summaries are written back as
+`(:Mandant)-[:CALLED]->(:Interaction)`.
+
+Env keys: see `.env.example` (LiveKit demo project + `OPENAI_API_KEY`).
