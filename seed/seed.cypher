@@ -119,6 +119,26 @@ MERGE (p:Paragraph {id: row.par})
 ON CREATE SET p.gesetz = 'EStG'
 MERGE (f)-[:GOVERNED_BY]->(p);
 
+// ---------- Kurznamen: spoken labels for the voice layer ----------
+// The official <titel> is missing for some §§ (10, 18, 19, 21) and unwieldy
+// for others (35a). kurzname is what the voice agent says; parse_estg.py only
+// writes titel/gesetz, so this overlay survives re-ingestion.
+UNWIND [
+  {par: '4',   kurzname: 'Gewinnermittlung'},
+  {par: '9',   kurzname: 'Werbungskosten'},
+  {par: '10',  kurzname: 'Sonderausgaben'},
+  {par: '10b', kurzname: 'Spenden'},
+  {par: '18',  kurzname: 'Selbständige Arbeit'},
+  {par: '19',  kurzname: 'Arbeitslohn'},
+  {par: '21',  kurzname: 'Vermietung und Verpachtung'},
+  {par: '22',  kurzname: 'Renten und sonstige Einkünfte'},
+  {par: '32a', kurzname: 'Einkommensteuertarif'},
+  {par: '35a', kurzname: 'Handwerker- und haushaltsnahe Leistungen'}
+] AS row
+MERGE (p:Paragraph {id: row.par})
+ON CREATE SET p.gesetz = 'EStG'
+SET p.kurzname = row.kurzname;
+
 // ---------- Interactions: caller memory ----------
 UNWIND [
   {id: 'I001', mandant: 'M002', datum: datetime('2026-08-18T10:12:00'), zusammenfassung: 'Fragte nach Status der ESt-Erklärung; Handwerkerrechnung und Fahrtkostennachweis angefordert.'},

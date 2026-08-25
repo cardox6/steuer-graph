@@ -17,7 +17,8 @@ OPTIONAL MATCH (f)-[:GOVERNED_BY]->(p:Paragraph)
 WITH m, f,
      collect(DISTINCT {art: b.art, status: b.status}) AS belege,
      collect(DISTINCT {art: fr.art, datum: toString(fr.datum)}) AS fristen,
-     collect(DISTINCT ('§ ' + p.id + ' EStG')) AS paragraphen
+     collect(DISTINCT ('§ ' + p.id + ' EStG'
+       + coalesce(' – ' + coalesce(p.kurzname, CASE WHEN p.titel <> '' THEN p.titel END), ''))) AS paragraphen
 WITH m, collect({
        fall: f.id, art: f.art, status: f.status,
        belege: [x IN belege WHERE x.art IS NOT NULL],
@@ -51,6 +52,7 @@ OPTIONAL MATCH (inp:Paragraph)-[:VERWEIST_AUF]->(p)
 OPTIONAL MATCH (f:Fall)-[:GOVERNED_BY]->(p)
 OPTIONAL MATCH (m:Mandant)-[:HAT_FALL]->(f)
 RETURN p.id AS paragraph, p.titel AS titel,
+       coalesce(p.kurzname, CASE WHEN p.titel <> '' THEN p.titel END) AS thema,
        collect(DISTINCT out.id) AS verweist_auf,
        collect(DISTINCT inp.id) AS verwiesen_von,
        collect(DISTINCT {fall: f.id, art: f.art, mandant: m.name}) AS betroffene_faelle
