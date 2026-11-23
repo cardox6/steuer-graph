@@ -24,9 +24,8 @@ picks one of four fixed tools; user input flows in as parameters.
    volume, not in a demo, and costs two extra vendors plus local
    VAD/turn-detector model setup. It remains the documented upgrade path.
    We still reuse proven German phone-assistant prompt rules and tool patterns.
-3. **Credentials: hybrid.** Use the stateless OPENAI_API_KEY;
-   create a **new free LiveKit Cloud project** for
-   the demo so prod SIP/dispatch infrastructure stays fully isolated.
+3. **Credentials.** An OPENAI_API_KEY plus a **new free LiveKit Cloud project**
+   for the demo, isolated from any production SIP/dispatch infrastructure.
    All values live only in the gitignored `.env`.
 4. **Data access: tools → httpx → existing FastAPI** (not direct Neo4j).
    All Cypher stays in `app/queries.py`. The demo exercises the real API.
