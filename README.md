@@ -1,6 +1,6 @@
-# steuer-graph
+# SteuerGraph
 
-A German voice agent that answers status calls for a tax firm from a Neo4j knowledge graph. I built it in one day at the Global AI Berlin "Mini Agentic Hack" (25 August 2026), a hands-on hackathon around Neo4j, GraphRAG, agentic AI and MCP. It took 3rd place out of 18 projects in the public vote ([results post](https://www.linkedin.com/feed/update/urn:li:activity:7498344697799798785/)).
+A German voice agent that answers status calls for a tax firm from a Neo4j knowledge graph. I built it in one day at the Neo4j Mini Hack, part of Global AI Construct in Berlin (25 August 2026), a hands-on hackathon around Neo4j, GraphRAG, agentic AI and MCP. It took 3rd place out of 18 projects in the public vote ([results post](https://www.linkedin.com/feed/update/urn:li:activity:7498344697799798785/)).
 
 All client data is invented. The legal part of the graph comes from the public XML of the Einkommensteuergesetz (EStG, the German Income Tax Act).
 
